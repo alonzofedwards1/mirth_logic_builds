@@ -4,7 +4,7 @@
 
 ### Source Transformer (JavaScript)
 ```javascript
-// HTTP POST /pd/trigger - Source Transformer returns the HTTP response body directly (no Response tab in 4.5.x)
+// HTTP POST /pd/trigger (match your context path exactly; mismatched trailing slash can yield 405) - Source Transformer returns the HTTP response body directly (no Response tab in 4.5.x)
 var rawBody = '';
 try {
     rawBody = String(connectorMessage.getRawData());
