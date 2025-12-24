@@ -40,5 +40,8 @@ This repository contains Mirth Connect (NextGen Connect) channel scripts for a l
 - Deploy all three channels after wiring the **Channel Writer** destination from PD_Request_In to PD_Mock_Responder.
 - The scripts use `globalMap` keys `pd_status_<request_id>` to track request status. PD_Request_In sets `PENDING`; PD_Mock_Responder sets `COMPLETE`; PD_Status_Get reads the same key.
 - Logs are written with `logger.info/warn/error` for visibility in the Channel Messages UI.
-- Responses are populated via `responseMessage` and `responseStatusCode` so that HTTP callers see the body/status and the data is visible in the **Response** and **Encoded** tabs.
+- Responses are populated via `responseMessage` and `responseStatusCode` so that HTTP callers see the body/status and the data is visible in the **Message Content** and **Encoded** views in the message browser.
+
+## How to test the channels
+- See [TESTING.md](TESTING.md) for end-to-end curl commands and UI source tests for each channel.
 
