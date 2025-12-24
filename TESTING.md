@@ -13,7 +13,7 @@ Adjust host/port if your listener differs.
     ```
   - Expected:
     - HTTP `202 Accepted`
-    - Empty response body
+    - Empty response body (Source Transformer returns empty string)
     - Channel log shows `Accepted PD trigger requestId=REQ-123 patientId=PAT-456`
     - Global status key `pd_status_REQ-123` set to `PENDING`
 - **Empty body:**
@@ -33,7 +33,7 @@ Adjust host/port if your listener differs.
   - Expected in `PD_Mock_Responder` message view:
     - `responseStatusCode` set to `202`
     - `responseHeaders` contains `Content-Type: application/xml`
-    - `responseMessage` and message content show HL7 v3 PRPA_IN201306UV02 XML
+    - Returned HL7 v3 PRPA_IN201306UV02 XML visible as the message content (no Response script is used)
     - Global status key `pd_status_<request_id>` updated to `COMPLETE`
 - **Direct source test (UI):**
   - In the Dashboard, select `PD_Mock_Responder` → **Send Message** (Channel Reader Source Test).
@@ -49,6 +49,9 @@ Adjust host/port if your listener differs.
   - Expected:
     - HTTP `200 OK`
     - JSON body with `request_id`, `status` (`PENDING` or `COMPLETE`), and `timestamp`
+- **Status via query parameter:**
+  - Command: `curl -i "http://localhost:8080/pd/status/?request_id=REQ-123"`
+  - Expected: same as above (`200 OK` with JSON body)
 - **Status not found:**
   - Command: `curl -i http://localhost:8080/pd/status/UNKNOWN-ID`
   - Expected: HTTP `404 Not Found` with JSON body `{ "error": "request_id not found" }`
