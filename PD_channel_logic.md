@@ -4,7 +4,7 @@
 
 ### Source Transformer (JavaScript)
 ```javascript
-// Defensive HTTP JSON intake for /pd/trigger/
+// Defensive HTTP JSON intake for /pd/trigger
 var rawBody = '';
 try {
     rawBody = String(connectorMessage.getRawData());
@@ -19,13 +19,16 @@ if (rawBody == null) {
 var parsed = null;
 var requestId = '';
 var patientId = '';
-var validationError = '';
+var errorText = '';
 
-try {
-    parsed = JSON.parse(rawBody);
-} catch (e1) {
-    logger.error('PD_Request_In: Invalid JSON payload received.');
-    validationError = 'Invalid JSON payload';
+if (rawBody === '') {
+    errorText = 'Empty request body';
+} else {
+    try {
+        parsed = JSON.parse(rawBody);
+    } catch (parseError) {
+        errorText = 'Invalid JSON payload';
+    }
 }
 
 if (parsed != null) {
@@ -36,24 +39,23 @@ if (parsed != null) {
         if (parsed.patient_id != null) {
             patientId = String(parsed.patient_id);
         }
-    } catch (e2) {
-        logger.error('PD_Request_In: Error extracting identifiers from payload.');
-        validationError = 'Unable to extract identifiers';
+    } catch (extractError) {
+        errorText = 'Unable to read request fields';
     }
 }
 
-if (validationError == '' && (requestId === '' || patientId === '')) {
-    validationError = 'Missing required fields: request_id and patient_id';
+if (errorText === '' && (requestId === '' || patientId === '')) {
+    errorText = 'Missing required fields: request_id and patient_id';
 }
 
 channelMap.put('requestId', requestId);
 channelMap.put('patientId', patientId);
 
-if (validationError !== '') {
+if (errorText !== '') {
     responseStatusCode = 400;
-    responseMessage = validationError;
-    logger.warn('PD_Request_In: Rejected request. Reason=' + validationError);
-    return rawBody;
+    responseHeaders.put('Content-Type', 'text/plain');
+    logger.warn('PD_Request_In: Rejected request. Reason=' + errorText);
+    return errorText;
 }
 
 var normalized = '{"request_id":"' + requestId + '","patient_id":"' + patientId + '"}';
@@ -61,31 +63,14 @@ msg = normalized;
 
 try {
     globalMap.put('pd_status_' + requestId, 'PENDING');
-} catch (e3) {
+} catch (statusError) {
     logger.warn('PD_Request_In: Unable to cache status for request ' + requestId);
 }
 
 logger.info('PD_Request_In: Accepted PD trigger requestId=' + requestId + ' patientId=' + patientId);
 responseStatusCode = 202;
-responseMessage = '';
-return msg;
-```
-
-### Response (JavaScript)
-```javascript
-// Ensure HTTP 202 with empty body
-var status = responseStatusCode;
-if (status == null) {
-    status = 202;
-}
-responseStatusCode = status;
-
-var body = responseMessage;
-if (body == null) {
-    body = '';
-}
 responseHeaders.put('Content-Type', 'application/json');
-return body;
+return '';
 ```
 
 ## PD_Mock_Responder
