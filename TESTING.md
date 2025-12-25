@@ -4,12 +4,24 @@ These steps assume all three channels are deployed in Mirth Connect 4.5.x and th
 Adjust host/port if your listener differs.
 
 ## 1) PD_Request_In (HTTP Listener)
-- **Happy path:**
+- **Happy path (Linux/macOS):**
   - Command:
     ```bash
-    curl -i -X POST http://localhost:8080/pd/trigger \
+    curl -i -X POST http://localhost:8080/pd/trigger/ \
       -H "Content-Type: application/json" \
       -d '{"request_id":"REQ-123","patient_id":"PAT-456"}'
+    ```
+  - Windows PowerShell equivalent:
+    ```powershell
+    curl -i -Method Post "http://localhost:8080/pd/trigger/" \
+      -Headers @{"Content-Type"="application/json"} \
+      -Body '{"request_id":"REQ-123","patient_id":"PAT-456"}'
+    ```
+  - Windows cmd.exe equivalent (caret for line continuation):
+    ```cmd
+    curl -i -X POST http://localhost:8080/pd/trigger/ ^
+      -H "Content-Type: application/json" ^
+      -d "{\"request_id\":\"REQ-123\",\"patient_id\":\"PAT-456\"}"
     ```
   - Expected:
     - HTTP `202 Accepted`
@@ -17,16 +29,16 @@ Adjust host/port if your listener differs.
     - Channel log shows `Accepted PD trigger requestId=REQ-123 patientId=PAT-456`
     - Global status key `pd_status_REQ-123` set to `PENDING`
 - **Empty body:**
-  - Command: `curl -i -X POST http://localhost:8080/pd/trigger -H "Content-Type: application/json" -d ''`
+  - Command: `curl -i -X POST http://localhost:8080/pd/trigger/ -H "Content-Type: application/json" -d ''`
   - Expected: HTTP `400 Bad Request` with body `Empty request body`
 - **Invalid JSON:**
-  - Command: `curl -i -X POST http://localhost:8080/pd/trigger -H "Content-Type: application/json" -d '{'`
+  - Command: `curl -i -X POST http://localhost:8080/pd/trigger/ -H "Content-Type: application/json" -d '{'`
   - Expected: HTTP `400 Bad Request` with body `Invalid JSON payload`
 - **Missing fields:**
-  - Command: `curl -i -X POST http://localhost:8080/pd/trigger -H "Content-Type: application/json" -d '{"request_id":"REQ-123"}'`
+  - Command: `curl -i -X POST http://localhost:8080/pd/trigger/ -H "Content-Type: application/json" -d '{"request_id":"REQ-123"}'`
   - Expected: HTTP `400 Bad Request` with body `Missing required fields: request_id and patient_id`
 
-> Tip: if your listener is configured with a trailing slash context path (e.g., `/pd/trigger/`), POST to the exact path configured; mismatching slashes often yields HTTP 405.
+> Tip: the listener expects an exact path match. If your context path is `/pd/trigger/`, use that exact trailing slash in your URL to avoid HTTP 405.
 
 ## 2) PD_Mock_Responder (Channel Reader)
 - **End-to-end via PD_Request_In:**

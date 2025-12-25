@@ -17,7 +17,7 @@ This repository contains Mirth Connect (NextGen Connect) channel scripts for a l
 ### 2) Create PD_Request_In (HTTP Listener)
 1. New Channel → name **PD_Request_In**.
 2. Source: **HTTP Listener**
-   - Context Path: `/pd/trigger` (omit trailing slash to avoid 405s)
+   - Context Path: `/pd/trigger/` (include trailing slash so the listener matches the posted URL)
    - Allowed Methods: `POST`
    - Content-Type: `application/json`
 3. Source Transformer: add a JavaScript step and paste the **PD_Request_In → Source Transformer** code. The transformer sets `responseStatusCode`/`responseHeaders`, and its return value is the HTTP response body (empty string yields an empty body).
